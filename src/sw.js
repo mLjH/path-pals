@@ -1,6 +1,6 @@
 // Offline support for the standalone site. The build stamps a new version on every change,
 // so an updated game replaces the old cache the next time the iPad is online.
-const CACHE = 'pathpals-c034886fab';
+const CACHE = 'pathpals-__VERSION__';
 const FONTS = 'pathpals-fonts';
 const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'icons/icon-180.png', 'icons/icon-192.png', 'icons/icon-512.png'];
 

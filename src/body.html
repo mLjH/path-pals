@@ -1,0 +1,51 @@
+<div id="app">
+  <header class="top">
+    <div class="lead">
+      <button class="round" id="mapBtn" aria-label="Pick a level"></button>
+      <div class="dots" id="dots" aria-label="Stars in this world"></div>
+    </div>
+    <button class="gear" id="gear" aria-label="For grown-ups: press and hold"><span class="fill"></span><svg viewBox="0 0 24 24" fill="none" stroke="#1F3A44" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.8v3M12 18.2v3M2.8 12h3M18.2 12h3M5.5 5.5l2.1 2.1M16.4 16.4l2.1 2.1M18.5 5.5l-2.1 2.1M7.6 16.4l-2.1 2.1"/></svg></button>
+  </header>
+  <main class="stage" id="stage">
+    <div class="board" id="board"><div class="grid" id="grid"></div></div>
+  </main>
+  <footer class="foot"><button class="cta" id="cta" aria-label="Go"></button></footer>
+</div>
+
+<section class="screen" id="start">
+  <h1 class="logo">Path Pals</h1>
+  <div class="party" id="startParty"></div>
+  <button class="cta" id="play" aria-label="Play"></button>
+</section>
+
+<section class="screen map" id="map" hidden>
+  <div class="mapwrap">
+    <div class="mapbar">
+      <button class="round" id="mapBack" aria-label="Back"></button>
+      <h2 class="maptitle">Path Pals</h2>
+      <button class="gear" id="gear2" aria-label="For grown-ups: press and hold"><span class="fill"></span><svg viewBox="0 0 24 24" fill="none" stroke="#1F3A44" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.8v3M12 18.2v3M2.8 12h3M18.2 12h3M5.5 5.5l2.1 2.1M16.4 16.4l2.1 2.1M18.5 5.5l-2.1 2.1M7.6 16.4l-2.1 2.1"/></svg></button>
+    </div>
+    <div class="worlds" id="worlds"></div>
+  </div>
+</section>
+
+<section class="screen cheer" id="cheer" hidden>
+  <div class="cheerstars" id="cheerStars"></div>
+  <div class="party" id="cheerParty"></div>
+  <button class="cta next" id="cheerBtn" aria-label="Next world"></button>
+</section>
+
+<div class="sheet" id="sheet" hidden>
+  <div class="card" role="dialog" aria-label="For grown-ups">
+    <h2>For grown-ups</h2>
+    <div class="setrows" id="setRows"></div>
+    <div class="row">
+      <button class="chip" id="hintBtn">Show hint now</button>
+      <button class="chip warn" id="resetBtn">Reset progress</button>
+    </div>
+    <p>Progress is saved in this browser on this device.</p>
+    <p>Guided Access keeps your child inside the game. Turn it on in Settings › Accessibility › Guided Access, then triple-click the top button (or Home button) while the game is open.</p>
+    <div class="row"><button class="chip main" id="closeBtn">Done</button></div>
+  </div>
+</div>
+<div id="fx"></div>

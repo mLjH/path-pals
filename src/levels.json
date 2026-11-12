@@ -1,0 +1,1557 @@
+[
+ {
+  "world": 0,
+  "grid": [
+   "..G",
+   "S..",
+   "..."
+  ],
+  "animals": [
+   {
+    "x": 0,
+    "y": 1,
+    "dir": "right"
+   }
+  ],
+  "allowed": [
+   "up"
+  ],
+  "tappable": [
+   "2,1"
+  ],
+  "intro": {
+   "x": 2,
+   "y": 1,
+   "dir": "up"
+  },
+  "say": "Tap the square to show the way. Then press go!",
+  "target": [
+   1,
+   1
+  ],
+  "arrows": 1
+ },
+ {
+  "world": 0,
+  "grid": [
+   "..S",
+   "G..",
+   ".PR"
+  ],
+  "animals": [
+   {
+    "x": 2,
+    "y": 0,
+    "dir": "down"
+   }
+  ],
+  "allowed": [
+   "left"
+  ],
+  "arrows": 1,
+  "target": [
+   1,
+   1
+  ]
+ },
+ {
+  "world": 0,
+  "grid": [
+   "R.G",
+   "...",
+   "S.T"
+  ],
+  "animals": [
+   {
+    "x": 0,
+    "y": 2,
+    "dir": "right"
+   }
+  ],
+  "allowed": [
+   "right",
+   "up"
+  ],
+  "arrows": 2,
+  "target": [
+   2,
+   2
+  ]
+ },
+ {
+  "world": 0,
+  "grid": [
+   "G..",
+   "P.T",
+   "R.S"
+  ],
+  "animals": [
+   {
+    "x": 2,
+    "y": 2,
+    "dir": "left"
+   }
+  ],
+  "allowed": [
+   "left",
+   "up"
+  ],
+  "arrows": 2,
+  "target": [
+   2,
+   2
+  ]
+ },
+ {
+  "world": 0,
+  "grid": [
+   "SS.",
+   "RP.",
+   "G.."
+  ],
+  "animals": [
+   {
+    "x": 1,
+    "y": 0,
+    "dir": "right"
+   },
+   {
+    "x": 0,
+    "y": 0,
+    "dir": "right"
+   }
+  ],
+  "allowed": [
+   "down",
+   "left"
+  ],
+  "arrows": 2,
+  "target": [
+   1,
+   2
+  ]
+ },
+ {
+  "world": 1,
+  "grid": [
+   "S..P",
+   ".R..",
+   "....",
+   "G..R"
+  ],
+  "animals": [
+   {
+    "x": 0,
+    "y": 0,
+    "dir": "right"
+   }
+  ],
+  "allowed": [
+   "down",
+   "left"
+  ],
+  "arrows": 2,
+  "target": [
+   2,
+   2
+  ]
+ },
+ {
+  "world": 1,
+  "grid": [
+   "R..S",
+   "..RR",
+   "....",
+   "R.G."
+  ],
+  "animals": [
+   {
+    "x": 3,
+    "y": 0,
+    "dir": "left"
+   }
+  ],
+  "allowed": [
+   "right",
+   "down"
+  ],
+  "arrows": 2,
+  "target": [
+   2,
+   3
+  ]
+ },
+ {
+  "world": 1,
+  "grid": [
+   "P..S",
+   "..R.",
+   "..RG",
+   "R..."
+  ],
+  "animals": [
+   {
+    "x": 3,
+    "y": 0,
+    "dir": "left"
+   }
+  ],
+  "allowed": [
+   "right",
+   "down",
+   "up"
+  ],
+  "arrows": 3,
+  "target": [
+   3,
+   3
+  ]
+ },
+ {
+  "world": 1,
+  "grid": [
+   "....",
+   "SR..",
+   ".R.R",
+   "TRG."
+  ],
+  "animals": [
+   {
+    "x": 0,
+    "y": 1,
+    "dir": "down"
+   }
+  ],
+  "allowed": [
+   "right",
+   "down",
+   "up"
+  ],
+  "arrows": 3,
+  "target": [
+   3,
+   3
+  ]
+ },
+ {
+  "world": 1,
+  "grid": [
+   "S...",
+   "RRR.",
+   "G...",
+   "PS.."
+  ],
+  "animals": [
+   {
+    "x": 0,
+    "y": 0,
+    "dir": "right"
+   },
+   {
+    "x": 1,
+    "y": 3,
+    "dir": "right"
+   }
+  ],
+  "allowed": [
+   "down",
+   "left",
+   "up"
+  ],
+  "arrows": 3,
+  "target": [
+   2,
+   3
+  ]
+ },
+ {
+  "world": 1,
+  "grid": [
+   "G..R",
+   "P...",
+   ".R.S",
+   "..RR"
+  ],
+  "animals": [
+   {
+    "x": 3,
+    "y": 2,
+    "dir": "left"
+   }
+  ],
+  "allowed": [
+   "left",
+   "up"
+  ],
+  "arrows": 2,
+  "target": [
+   2,
+   3
+  ]
+ },
+ {
+  "world": 1,
+  "grid": [
+   "...T",
+   "GR..",
+   ".T.R",
+   "S..P"
+  ],
+  "animals": [
+   {
+    "x": 0,
+    "y": 3,
+    "dir": "right"
+   }
+  ],
+  "allowed": [
+   "down",
+   "left",
+   "up"
+  ],
+  "arrows": 3,
+  "target": [
+   3,
+   3
+  ]
+ },
+ {
+  "world": 1,
+  "grid": [
+   "RSP.",
+   "T...",
+   ".PR.",
+   ".RG."
+  ],
+  "animals": [
+   {
+    "x": 1,
+    "y": 0,
+    "dir": "down"
+   }
+  ],
+  "allowed": [
+   "right",
+   "down",
+   "left"
+  ],
+  "arrows": 3,
+  "target": [
+   3,
+   4
+  ]
+ },
+ {
+  "world": 1,
+  "grid": [
+   "...G",
+   ".PR.",
+   "..TP",
+   "R..S"
+  ],
+  "animals": [
+   {
+    "x": 3,
+    "y": 3,
+    "dir": "left"
+   }
+  ],
+  "allowed": [
+   "right",
+   "left",
+   "up"
+  ],
+  "arrows": 4,
+  "target": [
+   4,
+   4
+  ]
+ },
+ {
+  "world": 1,
+  "grid": [
+   "..RS",
+   "..S.",
+   "..RT",
+   "...G"
+  ],
+  "animals": [
+   {
+    "x": 3,
+    "y": 0,
+    "dir": "down"
+   },
+   {
+    "x": 2,
+    "y": 1,
+    "dir": "right"
+   }
+  ],
+  "allowed": [
+   "right",
+   "down",
+   "left"
+  ],
+  "arrows": 3,
+  "target": [
+   3,
+   3
+  ]
+ },
+ {
+  "world": 2,
+  "grid": [
+   ".....",
+   "....P",
+   "GTP..",
+   ".R...",
+   "S...T"
+  ],
+  "animals": [
+   {
+    "x": 0,
+    "y": 4,
+    "dir": "right"
+   }
+  ],
+  "allowed": [
+   "down",
+   "left",
+   "up"
+  ],
+  "arrows": 3,
+  "target": [
+   3,
+   3
+  ]
+ },
+ {
+  "world": 2,
+  "grid": [
+   ".TRT.",
+   "T....",
+   "S.R..",
+   ".T...",
+   "...TG"
+  ],
+  "animals": [
+   {
+    "x": 0,
+    "y": 2,
+    "dir": "right"
+   }
+  ],
+  "allowed": [
+   "right",
+   "down",
+   "up"
+  ],
+  "arrows": 3,
+  "target": [
+   3,
+   4
+  ]
+ },
+ {
+  "world": 2,
+  "grid": [
+   "S....",
+   ".P...",
+   ".T.T.",
+   ".T.RG",
+   "...R."
+  ],
+  "animals": [
+   {
+    "x": 0,
+    "y": 0,
+    "dir": "down"
+   }
+  ],
+  "allowed": [
+   "right",
+   "down",
+   "up"
+  ],
+  "arrows": 4,
+  "target": [
+   4,
+   4
+  ]
+ },
+ {
+  "world": 2,
+  "grid": [
+   "GTT..",
+   ".....",
+   ".RT.R",
+   "TPT..",
+   "P.S.."
+  ],
+  "animals": [
+   {
+    "x": 2,
+    "y": 4,
+    "dir": "left"
+   }
+  ],
+  "allowed": [
+   "right",
+   "left",
+   "up"
+  ],
+  "arrows": 4,
+  "target": [
+   4,
+   4
+  ]
+ },
+ {
+  "world": 2,
+  "grid": [
+   "....S",
+   "..P..",
+   ".PT..",
+   "GT..S",
+   "R.R.."
+  ],
+  "animals": [
+   {
+    "x": 4,
+    "y": 3,
+    "dir": "down"
+   },
+   {
+    "x": 4,
+    "y": 0,
+    "dir": "down"
+   }
+  ],
+  "allowed": [
+   "down",
+   "left",
+   "up"
+  ],
+  "arrows": 4,
+  "target": [
+   3,
+   4
+  ]
+ },
+ {
+  "world": 2,
+  "grid": [
+   "....P",
+   ".T...",
+   ".P.S.",
+   ".R..T",
+   "G.T.T"
+  ],
+  "animals": [
+   {
+    "x": 3,
+    "y": 2,
+    "dir": "down"
+   }
+  ],
+  "allowed": [
+   "down",
+   "left",
+   "up"
+  ],
+  "arrows": 3,
+  "target": [
+   3,
+   4
+  ]
+ },
+ {
+  "world": 2,
+  "grid": [
+   "....T",
+   ".T..R",
+   "GP..S",
+   "..T..",
+   "...TP"
+  ],
+  "animals": [
+   {
+    "x": 4,
+    "y": 2,
+    "dir": "down"
+   }
+  ],
+  "allowed": [
+   "down",
+   "left",
+   "up"
+  ],
+  "arrows": 4,
+  "target": [
+   4,
+   4
+  ]
+ },
+ {
+  "world": 2,
+  "grid": [
+   "S.T.P",
+   "P....",
+   ".TTP.",
+   "G....",
+   ".TT.P"
+  ],
+  "animals": [
+   {
+    "x": 0,
+    "y": 0,
+    "dir": "right"
+   }
+  ],
+  "allowed": [
+   "right",
+   "down",
+   "left"
+  ],
+  "arrows": 4,
+  "target": [
+   4,
+   5
+  ]
+ },
+ {
+  "world": 2,
+  "grid": [
+   "TS.R.",
+   "...T.",
+   "P.T..",
+   "R...T",
+   ".RTG."
+  ],
+  "animals": [
+   {
+    "x": 1,
+    "y": 0,
+    "dir": "right"
+   }
+  ],
+  "allowed": [
+   "right",
+   "down",
+   "left"
+  ],
+  "arrows": 5,
+  "target": [
+   5,
+   5
+  ]
+ },
+ {
+  "world": 2,
+  "grid": [
+   "TT..G",
+   ".....",
+   "TS.PT",
+   "..P.T",
+   "T.SS."
+  ],
+  "animals": [
+   {
+    "x": 2,
+    "y": 4,
+    "dir": "right"
+   },
+   {
+    "x": 3,
+    "y": 4,
+    "dir": "left"
+   },
+   {
+    "x": 1,
+    "y": 2,
+    "dir": "down"
+   }
+  ],
+  "allowed": [
+   "right",
+   "left",
+   "up"
+  ],
+  "arrows": 4,
+  "target": [
+   4,
+   4
+  ]
+ },
+ {
+  "world": 3,
+  "grid": [
+   "......",
+   ".....T",
+   ".R.R.P",
+   "..RT..",
+   ".T...T",
+   ".S.P.G"
+  ],
+  "animals": [
+   {
+    "x": 1,
+    "y": 5,
+    "dir": "left"
+   }
+  ],
+  "allowed": [
+   "right",
+   "down",
+   "up"
+  ],
+  "arrows": 4,
+  "target": [
+   4,
+   4
+  ]
+ },
+ {
+  "world": 3,
+  "grid": [
+   "T.TG..",
+   "...TT.",
+   "......",
+   "..T.TR",
+   "....S.",
+   "..TTT."
+  ],
+  "animals": [
+   {
+    "x": 4,
+    "y": 4,
+    "dir": "left"
+   }
+  ],
+  "allowed": [
+   "right",
+   "left",
+   "up"
+  ],
+  "arrows": 4,
+  "target": [
+   4,
+   5
+  ]
+ },
+ {
+  "world": 3,
+  "grid": [
+   ".....G",
+   ".T.RT.",
+   ".RTP.T",
+   "......",
+   "P.PT..",
+   "TT.S.T"
+  ],
+  "animals": [
+   {
+    "x": 3,
+    "y": 5,
+    "dir": "left"
+   }
+  ],
+  "allowed": [
+   "right",
+   "left",
+   "up"
+  ],
+  "arrows": 5,
+  "target": [
+   5,
+   5
+  ]
+ },
+ {
+  "world": 3,
+  "grid": [
+   "......",
+   "T..T.P",
+   "T..TS.",
+   "..RT..",
+   ".T.R.R",
+   "GTT..."
+  ],
+  "animals": [
+   {
+    "x": 4,
+    "y": 2,
+    "dir": "down"
+   }
+  ],
+  "allowed": [
+   "down",
+   "left",
+   "up"
+  ],
+  "arrows": 5,
+  "target": [
+   5,
+   5
+  ]
+ },
+ {
+  "world": 3,
+  "grid": [
+   "......",
+   ".R..GT",
+   "T..T.T",
+   "T.T.RS",
+   "..R...",
+   "P..S.."
+  ],
+  "animals": [
+   {
+    "x": 3,
+    "y": 5,
+    "dir": "right"
+   },
+   {
+    "x": 5,
+    "y": 3,
+    "dir": "down"
+   }
+  ],
+  "allowed": [
+   "right",
+   "left",
+   "up"
+  ],
+  "arrows": 5,
+  "target": [
+   4,
+   5
+  ]
+ },
+ {
+  "world": 3,
+  "grid": [
+   ".G....",
+   ".T..P.",
+   "T.....",
+   "..TP..",
+   "P.S.T.",
+   "..TT.."
+  ],
+  "animals": [
+   {
+    "x": 2,
+    "y": 4,
+    "dir": "right"
+   }
+  ],
+  "allowed": [
+   "right",
+   "left",
+   "up"
+  ],
+  "arrows": 5,
+  "target": [
+   4,
+   5
+  ]
+ },
+ {
+  "world": 3,
+  "grid": [
+   ".RS..T",
+   "...R.T",
+   "......",
+   "....R.",
+   "T....P",
+   "..RTGT"
+  ],
+  "animals": [
+   {
+    "x": 2,
+    "y": 0,
+    "dir": "right"
+   }
+  ],
+  "allowed": [
+   "right",
+   "down",
+   "left"
+  ],
+  "arrows": 5,
+  "target": [
+   5,
+   5
+  ]
+ },
+ {
+  "world": 3,
+  "grid": [
+   "..RT..",
+   "....S.",
+   ".R.TR.",
+   ".TTTR.",
+   "TT....",
+   "G...T."
+  ],
+  "animals": [
+   {
+    "x": 4,
+    "y": 1,
+    "dir": "left"
+   }
+  ],
+  "allowed": [
+   "right",
+   "down",
+   "left"
+  ],
+  "arrows": 5,
+  "target": [
+   5,
+   5
+  ]
+ },
+ {
+  "world": 3,
+  "grid": [
+   "GTP...",
+   "....RS",
+   ".TT.T.",
+   "....T.",
+   "TRRP..",
+   "T....T"
+  ],
+  "animals": [
+   {
+    "x": 5,
+    "y": 1,
+    "dir": "down"
+   }
+  ],
+  "allowed": [
+   "down",
+   "left",
+   "up"
+  ],
+  "arrows": 5,
+  "target": [
+   5,
+   6
+  ]
+ },
+ {
+  "world": 3,
+  "grid": [
+   "..T.G.",
+   "TRP..R",
+   "..S...",
+   "...P.T",
+   "..T.P.",
+   "..S.S."
+  ],
+  "animals": [
+   {
+    "x": 2,
+    "y": 5,
+    "dir": "right"
+   },
+   {
+    "x": 4,
+    "y": 5,
+    "dir": "left"
+   },
+   {
+    "x": 2,
+    "y": 2,
+    "dir": "left"
+   }
+  ],
+  "allowed": [
+   "right",
+   "left",
+   "up"
+  ],
+  "arrows": 4,
+  "target": [
+   4,
+   5
+  ]
+ },
+ {
+  "world": 3,
+  "grid": [
+   "T....R",
+   "T...R.",
+   "..R..S",
+   "P..PT.",
+   "R.RTRG",
+   "......"
+  ],
+  "animals": [
+   {
+    "x": 5,
+    "y": 2,
+    "dir": "left"
+   }
+  ],
+  "allowed": [
+   "right",
+   "down",
+   "left",
+   "up"
+  ],
+  "arrows": 5,
+  "target": [
+   5,
+   5
+  ]
+ },
+ {
+  "world": 3,
+  "grid": [
+   ".G.TTR",
+   "T.....",
+   "....R.",
+   "RTTT..",
+   "T..S.T",
+   ".T.PR."
+  ],
+  "animals": [
+   {
+    "x": 3,
+    "y": 4,
+    "dir": "left"
+   }
+  ],
+  "allowed": [
+   "right",
+   "left",
+   "up"
+  ],
+  "arrows": 6,
+  "target": [
+   5,
+   6
+  ]
+ },
+ {
+  "world": 3,
+  "grid": [
+   "G.T..R",
+   "T.T...",
+   "T.T.RS",
+   "T...R.",
+   "T...T.",
+   ".....T"
+  ],
+  "animals": [
+   {
+    "x": 5,
+    "y": 2,
+    "dir": "down"
+   }
+  ],
+  "allowed": [
+   "down",
+   "left",
+   "up"
+  ],
+  "arrows": 6,
+  "target": [
+   6,
+   6
+  ]
+ },
+ {
+  "world": 3,
+  "grid": [
+   "T.P...",
+   "....S.",
+   ".TRR.P",
+   ".TP...",
+   ".TT.TR",
+   "..GT.."
+  ],
+  "animals": [
+   {
+    "x": 4,
+    "y": 1,
+    "dir": "down"
+   }
+  ],
+  "allowed": [
+   "right",
+   "down",
+   "left",
+   "up"
+  ],
+  "arrows": 6,
+  "target": [
+   6,
+   6
+  ]
+ },
+ {
+  "world": 3,
+  "grid": [
+   "P.TTPT",
+   ".S.S..",
+   "....T.",
+   "..S..T",
+   "T.R...",
+   "G....."
+  ],
+  "animals": [
+   {
+    "x": 3,
+    "y": 1,
+    "dir": "right"
+   },
+   {
+    "x": 1,
+    "y": 1,
+    "dir": "left"
+   },
+   {
+    "x": 2,
+    "y": 3,
+    "dir": "left"
+   }
+  ],
+  "allowed": [
+   "right",
+   "down",
+   "left"
+  ],
+  "arrows": 5,
+  "target": [
+   5,
+   6
+  ]
+ },
+ {
+  "world": 4,
+  "grid": [
+   "..gS.",
+   ".SP.R",
+   "..P..",
+   "..R..",
+   "T.g.."
+  ],
+  "animals": [
+   {
+    "x": 3,
+    "y": 0,
+    "dir": "down",
+    "goal": {
+     "x": 2,
+     "y": 4
+    }
+   },
+   {
+    "x": 1,
+    "y": 1,
+    "dir": "down",
+    "goal": {
+     "x": 2,
+     "y": 0
+    }
+   }
+  ],
+  "allowed": [
+   "right",
+   "left",
+   "up"
+  ],
+  "arrows": 3,
+  "target": [
+   2,
+   3
+  ],
+  "stage": "apart"
+ },
+ {
+  "world": 4,
+  "grid": [
+   "..gTg",
+   "SR.R.",
+   ".R...",
+   "R..R.",
+   ".S..."
+  ],
+  "animals": [
+   {
+    "x": 1,
+    "y": 4,
+    "dir": "left",
+    "goal": {
+     "x": 4,
+     "y": 0
+    }
+   },
+   {
+    "x": 0,
+    "y": 1,
+    "dir": "down",
+    "goal": {
+     "x": 2,
+     "y": 0
+    }
+   }
+  ],
+  "allowed": [
+   "right",
+   "up"
+  ],
+  "arrows": 4,
+  "target": [
+   2,
+   4
+  ],
+  "stage": "apart"
+ },
+ {
+  "world": 4,
+  "grid": [
+   "...R..",
+   ".....g",
+   "S...TR",
+   ".P....",
+   ".g.S..",
+   ".P.R.."
+  ],
+  "animals": [
+   {
+    "x": 3,
+    "y": 4,
+    "dir": "right",
+    "goal": {
+     "x": 1,
+     "y": 4
+    }
+   },
+   {
+    "x": 0,
+    "y": 2,
+    "dir": "down",
+    "goal": {
+     "x": 5,
+     "y": 1
+    }
+   }
+  ],
+  "allowed": [
+   "right",
+   "left",
+   "up"
+  ],
+  "arrows": 3,
+  "target": [
+   3,
+   4
+  ],
+  "stage": "apart"
+ },
+ {
+  "world": 4,
+  "grid": [
+   ".T.SS",
+   ".....",
+   ".TPRP",
+   "..g.g",
+   ".R..."
+  ],
+  "animals": [
+   {
+    "x": 3,
+    "y": 0,
+    "dir": "left",
+    "goal": {
+     "x": 2,
+     "y": 3
+    }
+   },
+   {
+    "x": 4,
+    "y": 0,
+    "dir": "left",
+    "goal": {
+     "x": 4,
+     "y": 3
+    }
+   }
+  ],
+  "allowed": [
+   "right",
+   "down",
+   "left"
+  ],
+  "arrows": 4,
+  "target": [
+   2,
+   4
+  ],
+  "stage": "share"
+ },
+ {
+  "world": 4,
+  "grid": [
+   "..R...",
+   "......",
+   ".R...T",
+   "gTS...",
+   "gTRP.P",
+   "T..S.."
+  ],
+  "animals": [
+   {
+    "x": 3,
+    "y": 5,
+    "dir": "right",
+    "goal": {
+     "x": 0,
+     "y": 3
+    }
+   },
+   {
+    "x": 2,
+    "y": 3,
+    "dir": "right",
+    "goal": {
+     "x": 0,
+     "y": 4
+    }
+   }
+  ],
+  "allowed": [
+   "down",
+   "left",
+   "up"
+  ],
+  "arrows": 4,
+  "target": [
+   3,
+   4
+  ],
+  "stage": "share"
+ },
+ {
+  "world": 4,
+  "grid": [
+   "gP.T..",
+   ".g...T",
+   "...P.T",
+   "T.....",
+   "TT...P",
+   "..SS.."
+  ],
+  "animals": [
+   {
+    "x": 2,
+    "y": 5,
+    "dir": "left",
+    "goal": {
+     "x": 0,
+     "y": 0
+    }
+   },
+   {
+    "x": 3,
+    "y": 5,
+    "dir": "left",
+    "goal": {
+     "x": 1,
+     "y": 1
+    }
+   }
+  ],
+  "allowed": [
+   "right",
+   "left",
+   "up"
+  ],
+  "arrows": 4,
+  "target": [
+   3,
+   5
+  ],
+  "stage": "share"
+ },
+ {
+  "world": 4,
+  "grid": [
+   "g.S..",
+   ".P...",
+   "SP..T",
+   "...g.",
+   "R.P.."
+  ],
+  "animals": [
+   {
+    "x": 2,
+    "y": 0,
+    "dir": "down",
+    "goal": {
+     "x": 0,
+     "y": 0
+    }
+   },
+   {
+    "x": 0,
+    "y": 2,
+    "dir": "down",
+    "goal": {
+     "x": 3,
+     "y": 3
+    }
+   }
+  ],
+  "allowed": [
+   "right",
+   "left",
+   "up"
+  ],
+  "arrows": 4,
+  "target": [
+   2,
+   4
+  ],
+  "stage": "tangle"
+ },
+ {
+  "world": 4,
+  "grid": [
+   "P...R.",
+   "S.....",
+   ".R...R",
+   "...T.R",
+   "R...S.",
+   ".g.TgT"
+  ],
+  "animals": [
+   {
+    "x": 4,
+    "y": 4,
+    "dir": "left",
+    "goal": {
+     "x": 1,
+     "y": 5
+    }
+   },
+   {
+    "x": 0,
+    "y": 1,
+    "dir": "down",
+    "goal": {
+     "x": 4,
+     "y": 5
+    }
+   }
+  ],
+  "allowed": [
+   "right",
+   "down",
+   "up"
+  ],
+  "arrows": 5,
+  "target": [
+   3,
+   5
+  ],
+  "stage": "tangle"
+ },
+ {
+  "world": 4,
+  "grid": [
+   "....g.",
+   "gPRP..",
+   "..R.ST",
+   "......",
+   "....S.",
+   ".R..PT"
+  ],
+  "animals": [
+   {
+    "x": 4,
+    "y": 4,
+    "dir": "right",
+    "goal": {
+     "x": 4,
+     "y": 0
+    }
+   },
+   {
+    "x": 4,
+    "y": 2,
+    "dir": "down",
+    "goal": {
+     "x": 0,
+     "y": 1
+    }
+   }
+  ],
+  "allowed": [
+   "right",
+   "left",
+   "up"
+  ],
+  "arrows": 5,
+  "target": [
+   4,
+   5
+  ],
+  "stage": "tangle"
+ },
+ {
+  "world": 4,
+  "grid": [
+   "...R..",
+   "gRg...",
+   "gT.S..",
+   "...SPT",
+   ".R....",
+   ".P...S"
+  ],
+  "animals": [
+   {
+    "x": 3,
+    "y": 2,
+    "dir": "down",
+    "goal": {
+     "x": 2,
+     "y": 1
+    }
+   },
+   {
+    "x": 3,
+    "y": 3,
+    "dir": "down",
+    "goal": {
+     "x": 0,
+     "y": 2
+    }
+   },
+   {
+    "x": 5,
+    "y": 5,
+    "dir": "left",
+    "goal": {
+     "x": 0,
+     "y": 1
+    }
+   }
+  ],
+  "allowed": [
+   "down",
+   "left",
+   "up"
+  ],
+  "arrows": 4,
+  "target": [
+   3,
+   5
+  ],
+  "stage": "share"
+ }
+]

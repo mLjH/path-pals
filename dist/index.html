@@ -242,6 +242,38 @@ body{transition:background-color .4s}
   .lvl.now::after,.cheerstars .star{animation:none}
 }
 
+/* swiping across a square sets its arrow, so the board must not scroll or zoom under a finger */
+.tile{touch-action:none}
+
+/* ---------- bonus world: each character has its own goal ---------- */
+.w-lagoon,:root[data-world="lagoon"]{--bg:#DDF3F7;--grass-a:#C9EEE6;--grass-b:#B8E4DA;--edge:#79C3B6;--edge-dark:#55A196}
+.thumb i.g{background:#FFC93C;box-shadow:0 0 0 2px #FFF1A8}
+.duo{position:relative;display:block;width:40px;height:40px}
+.duo svg{position:absolute;width:28px;height:28px}
+.duo svg:first-child{left:0;top:0}
+.duo svg:last-child{right:0;bottom:0}
+
+/* ---------- characters stand out: a glowing ring on each start square (gone after the first Go) and a gentle idle bounce ---------- */
+.spot{position:absolute;inset:6%;border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle,rgba(255,255,255,.95) 0%,rgba(255,255,255,.75) 55%,rgba(255,255,255,0) 72%);
+  box-shadow:0 0 0 4px #FF5FA2,0 0 16px 4px rgba(255,95,162,.55);
+  animation:spot 1.6s ease-in-out infinite}
+.tile.start .face::after{display:none}
+.idle{position:absolute;inset:0;transform-origin:50% 92%;animation:idle 2.6s ease-in-out infinite;animation-delay:var(--idle-delay,0s)}
+.grid.busy .idle,.grid.won .idle{animation:none}
+.spot{transition:opacity .35s}
+.grid.played .spot{opacity:0;animation:none}
+@keyframes spot{0%,100%{transform:scale(.94);box-shadow:0 0 0 4px #FF5FA2,0 0 10px 2px rgba(255,95,162,.4)}50%{transform:scale(1.02);box-shadow:0 0 0 5px #FF5FA2,0 0 22px 7px rgba(255,95,162,.65)}}
+@keyframes idle{
+  0%,58%,100%{transform:translateY(0) scale(1,1)}
+  29%{transform:translateY(0) scale(1.03,.97)}
+  66%{transform:translateY(1%) scale(1.07,.92)}
+  76%{transform:translateY(-14%) scale(.95,1.06)}
+  86%{transform:translateY(1%) scale(1.05,.95)}
+  93%{transform:translateY(0) scale(1,1)}
+}
+@media (prefers-reduced-motion:reduce){ .spot,.idle{animation:none} }
+
 </style>
 </head>
 <body>
@@ -299,9 +331,12 @@ body{transition:background-color .4s}
 
 <script>
 // Path Pals engine: pure functions, shared by the game, the level generator and the tests.
-// Grid legend: . floor, S start (the animals list gives type and facing), G goal, R rock, T tree, P poo
+// Grid legend: . floor, S start (the animals list gives type and facing), G shared goal, R rock, T tree, P poo,
+// g a goal that belongs to one character (that character's "goal": {x,y} in the animals list).
+// A character finishes on G or on its own g. It walks straight over anyone else's g.
 const DIRS={up:{dx:0,dy:-1,rot:0},right:{dx:1,dy:0,rot:90},down:{dx:0,dy:1,rot:180},left:{dx:-1,dy:0,rot:270}};
 const K=(x,y)=>x+','+y;
+const isGoalFor=(L,a,x,y)=>a.goal?(a.goal.x===x&&a.goal.y===y):cellAt(L,x,y)==='G';
 function build(def){
   const cells=def.grid.map(r=>r.split('').map(c=>c==='S'?'.':c));
   return {...def,cells,rows:cells.length,cols:cells[0].length};
@@ -322,8 +357,8 @@ function walk(L,a,get){
     const d=DIRS[dir],nx=x+d.dx,ny=y+d.dy,c=cellAt(L,nx,ny);
     if(blocked(c)) return {path,result:'bump',bump:{x:nx,y:ny,dir}};
     x=nx;y=ny;
-    if(c==='G'){ path.push({x,y,dir}); return {path,result:'win'}; }
-    const g=get(x,y);
+    if(isGoalFor(L,a,x,y)){ path.push({x,y,dir}); return {path,result:'win'}; }
+    const g=isTappable(L,x,y)?get(x,y):null;
     if(g===undefined) return {path,result:'undecided',at:{x,y}};
     if(g) dir=g;
     path.push({x,y,dir});
@@ -371,9 +406,88 @@ function hintFor(L,get,sol){
   }
   return null;
 }
-if(typeof module!=='undefined'&&module.exports) module.exports={DIRS,K,build,cellAt,blocked,isTappable,walk,solve,hintFor};
+// ---------- hints that build on the child's own board ----------
+// Cheapest route for one character, where changing a square costs far more than walking.
+// Walking along a square the child already set is cheapest of all, so the route sticks to the child's plan.
+const EDIT=10000, STEP_OWN=1, STEP_FREE=10;
+function routeFor(L,a,val,locked,dirs){
+  const d0=DIRS[a.dir],sx=a.x+d0.dx,sy=a.y+d0.dy;
+  if(blocked(cellAt(L,sx,sy))) return null;
+  const sk=(x,y,d)=>x+','+y+','+d;
+  const dist=new Map(),prev=new Map(),done=new Set();
+  const start=sk(sx,sy,a.dir);
+  dist.set(start,0); prev.set(start,null);
+  const info=new Map([[start,{x:sx,y:sy,d:a.dir}]]);
+  while(true){
+    let best=null,bc=Infinity;
+    for(const [k,c] of dist) if(!done.has(k)&&c<bc){ bc=c; best=k; }
+    if(best===null) return null;
+    done.add(best);
+    const {x,y,d}=info.get(best);
+    if(isGoalFor(L,a,x,y)){
+      // Walk back, collecting what each square must hold. A square used twice must agree with itself.
+      const sets=new Map(),used=new Map(),keys=new Set();
+      for(let k=best;k;k=prev.get(k).from){
+        const p=prev.get(k); if(!p) break;
+        keys.add(p.key);
+        const want=p.set===undefined?'keep':p.set;
+        if(used.has(p.key)&&used.get(p.key)!==want) return null;
+        used.set(p.key,want);
+        if(p.set!==undefined) sets.set(p.key,p.set);
+      }
+      return {sets,keys};
+    }
+    const key=K(x,y),canEdit=isTappable(L,x,y)&&!locked.has(key);
+    const cur=isTappable(L,x,y)?val(x,y):null, eff=cur||d;
+    const opts=[[eff,undefined,cur?STEP_OWN:STEP_FREE]];
+    if(canEdit){
+      for(const o of dirs) if(o!==eff) opts.push([o,o,EDIT+STEP_FREE]);
+      if(eff!==d) opts.push([d,dirs.includes(d)?d:null,EDIT+STEP_FREE]);   // straighten a turn
+    }
+    for(const [o,set,cost] of opts){
+      const nx=x+DIRS[o].dx,ny=y+DIRS[o].dy;
+      if(blocked(cellAt(L,nx,ny))) continue;
+      const nk=sk(nx,ny,o),nc=bc+cost;
+      if(!done.has(nk)&&nc<(dist.has(nk)?dist.get(nk):Infinity)){
+        dist.set(nk,nc); info.set(nk,{x:nx,y:ny,d:o}); prev.set(nk,{from:best,key,set});
+      }
+    }
+  }
+}
+function permutations(a){ return a.length<2?[a]:a.flatMap((v,i)=>permutations(a.filter((_,j)=>j!==i)).map(p=>[v,...p])); }
+// The smallest change to the child's board that gets every character to the goal, keeping their arrows
+// wherever possible. Returns the first square to change, in walking order: {x,y,dir} (dir null = clear it).
+// Returns null when the board already wins, or when no fix was found (the game then falls back to hintFor).
+function fixFor(L,get,dirs){
+  dirs=dirs||L.allowed;
+  const cur=(x,y)=>get(x,y)||null;
+  if(L.animals.every(a=>walk(L,a,cur).result==='win')) return null;
+  for(const order of permutations(L.animals.map((_,i)=>i))){
+    const board=new Map(),locked=new Set();
+    const val=(x,y)=>{ const k=K(x,y); return board.has(k)?board.get(k):cur(x,y); };
+    let ok=true;
+    for(const i of order){
+      const r=routeFor(L,L.animals[i],val,locked,dirs);
+      if(!r){ ok=false; break; }
+      r.sets.forEach((v,k)=>board.set(k,v));
+      r.keys.forEach(k=>locked.add(k));
+    }
+    if(!ok||!L.animals.every(a=>walk(L,a,val).result==='win')) continue;
+    let first=null;
+    L.animals.forEach(a=>{
+      const p=walk(L,a,val).path;
+      for(let s=1;s<p.length;s++){
+        const {x,y}=p[s],k=K(x,y);
+        if(board.has(k)&&board.get(k)!==cur(x,y)){ if(!first||s<first.s) first={s,x,y,dir:board.get(k)}; break; }
+      }
+    });
+    if(first) return {x:first.x,y:first.y,dir:first.dir};
+  }
+  return null;
+}
+if(typeof module!=='undefined'&&module.exports) module.exports={DIRS,K,build,cellAt,blocked,isTappable,isGoalFor,walk,solve,hintFor,fixFor};
 
-const LEVELS = [{"world":0,"grid":["..G","S..","..."],"animals":[{"x":0,"y":1,"dir":"right"}],"allowed":["up"],"tappable":["2,1"],"intro":{"x":2,"y":1,"dir":"up"},"say":"Tap the square to show the way. Then press go!"},{"world":0,"grid":["..S","G..",".PR"],"animals":[{"x":2,"y":0,"dir":"down"}],"allowed":["left"]},{"world":0,"grid":["R.G","...","S.T"],"animals":[{"x":0,"y":2,"dir":"right"}],"allowed":["right","up"]},{"world":0,"grid":["G..","P.T","R.S"],"animals":[{"x":2,"y":2,"dir":"left"}],"allowed":["left","up"]},{"world":0,"grid":["SS.","RP.","G.."],"animals":[{"x":1,"y":0,"dir":"right"},{"x":0,"y":0,"dir":"right"}],"allowed":["down","left"]},{"world":1,"grid":["S..P",".R..","....","G..R"],"animals":[{"x":0,"y":0,"dir":"right"}],"allowed":["down","left"]},{"world":1,"grid":["R..S","..RR","....","R.G."],"animals":[{"x":3,"y":0,"dir":"left"}],"allowed":["right","down"]},{"world":1,"grid":["P..S","..R.","..RG","R..."],"animals":[{"x":3,"y":0,"dir":"left"}],"allowed":["right","down","up"]},{"world":1,"grid":["....","SR..",".R.R","TRG."],"animals":[{"x":0,"y":1,"dir":"down"}],"allowed":["right","down","up"]},{"world":1,"grid":["S...","RRR.","G...","PS.."],"animals":[{"x":0,"y":0,"dir":"right"},{"x":1,"y":3,"dir":"right"}],"allowed":["down","left","up"]},{"world":1,"grid":["G..R","P...",".R.S","..RR"],"animals":[{"x":3,"y":2,"dir":"left"}],"allowed":["left","up"]},{"world":1,"grid":["...T","GR..",".T.R","S..P"],"animals":[{"x":0,"y":3,"dir":"right"}],"allowed":["down","left","up"]},{"world":1,"grid":["RSP.","T...",".PR.",".RG."],"animals":[{"x":1,"y":0,"dir":"down"}],"allowed":["right","down","left"]},{"world":1,"grid":["...G",".PR.","..TP","R..S"],"animals":[{"x":3,"y":3,"dir":"left"}],"allowed":["right","left","up"]},{"world":1,"grid":["..RS","..S.","..RT","...G"],"animals":[{"x":3,"y":0,"dir":"down"},{"x":2,"y":1,"dir":"right"}],"allowed":["right","down","left"]},{"world":2,"grid":[".....","....P","GTP..",".R...","S...T"],"animals":[{"x":0,"y":4,"dir":"right"}],"allowed":["down","left","up"]},{"world":2,"grid":[".TRT.","T....","S.R..",".T...","...TG"],"animals":[{"x":0,"y":2,"dir":"right"}],"allowed":["right","down","up"]},{"world":2,"grid":["S....",".P...",".T.T.",".T.RG","...R."],"animals":[{"x":0,"y":0,"dir":"down"}],"allowed":["right","down","up"]},{"world":2,"grid":["GTT..",".....",".RT.R","TPT..","P.S.."],"animals":[{"x":2,"y":4,"dir":"left"}],"allowed":["right","left","up"]},{"world":2,"grid":["....S","..P..",".PT..","GT..S","R.R.."],"animals":[{"x":4,"y":3,"dir":"down"},{"x":4,"y":0,"dir":"down"}],"allowed":["down","left","up"]},{"world":2,"grid":["....P",".T...",".P.S.",".R..T","G.T.T"],"animals":[{"x":3,"y":2,"dir":"down"}],"allowed":["down","left","up"]},{"world":2,"grid":["....T",".T..R","GP..S","..T..","...TP"],"animals":[{"x":4,"y":2,"dir":"down"}],"allowed":["down","left","up"]},{"world":2,"grid":["S.T.P","P....",".TTP.","G....",".TT.P"],"animals":[{"x":0,"y":0,"dir":"right"}],"allowed":["right","down","left"]},{"world":2,"grid":["TS.R.","...T.","P.T..","R...T",".RTG."],"animals":[{"x":1,"y":0,"dir":"right"}],"allowed":["right","down","left"]},{"world":2,"grid":["TT..G",".....","TS.PT","..P.T","T.SS."],"animals":[{"x":2,"y":4,"dir":"right"},{"x":3,"y":4,"dir":"left"},{"x":1,"y":2,"dir":"down"}],"allowed":["right","left","up"]},{"world":3,"grid":["......",".....T",".R.R.P","..RT..",".T...T",".S.P.G"],"animals":[{"x":1,"y":5,"dir":"left"}],"allowed":["right","down","up"]},{"world":3,"grid":["T.TG..","...TT.","......","..T.TR","....S.","..TTT."],"animals":[{"x":4,"y":4,"dir":"left"}],"allowed":["right","left","up"]},{"world":3,"grid":[".....G",".T.RT.",".RTP.T","......","P.PT..","TT.S.T"],"animals":[{"x":3,"y":5,"dir":"left"}],"allowed":["right","left","up"]},{"world":3,"grid":["......","T..T.P","T..TS.","..RT..",".T.R.R","GTT..."],"animals":[{"x":4,"y":2,"dir":"down"}],"allowed":["down","left","up"]},{"world":3,"grid":["......",".R..GT","T..T.T","T.T.RS","..R...","P..S.."],"animals":[{"x":3,"y":5,"dir":"right"},{"x":5,"y":3,"dir":"down"}],"allowed":["right","left","up"]},{"world":3,"grid":[".G....",".T..P.","T.....","..TP..","P.S.T.","..TT.."],"animals":[{"x":2,"y":4,"dir":"right"}],"allowed":["right","left","up"]},{"world":3,"grid":[".RS..T","...R.T","......","....R.","T....P","..RTGT"],"animals":[{"x":2,"y":0,"dir":"right"}],"allowed":["right","down","left"]},{"world":3,"grid":["..RT..","....S.",".R.TR.",".TTTR.","TT....","G...T."],"animals":[{"x":4,"y":1,"dir":"left"}],"allowed":["right","down","left"]},{"world":3,"grid":["GTP...","....RS",".TT.T.","....T.","TRRP..","T....T"],"animals":[{"x":5,"y":1,"dir":"down"}],"allowed":["down","left","up"]},{"world":3,"grid":["..T.G.","TRP..R","..S...","...P.T","..T.P.","..S.S."],"animals":[{"x":2,"y":5,"dir":"right"},{"x":4,"y":5,"dir":"left"},{"x":2,"y":2,"dir":"left"}],"allowed":["right","left","up"]},{"world":3,"grid":["T....R","T...R.","..R..S","P..PT.","R.RTRG","......"],"animals":[{"x":5,"y":2,"dir":"left"}],"allowed":["right","down","left","up"]},{"world":3,"grid":[".G.TTR","T.....","....R.","RTTT..","T..S.T",".T.PR."],"animals":[{"x":3,"y":4,"dir":"left"}],"allowed":["right","left","up"]},{"world":3,"grid":["G.T..R","T.T...","T.T.RS","T...R.","T...T.",".....T"],"animals":[{"x":5,"y":2,"dir":"down"}],"allowed":["down","left","up"]},{"world":3,"grid":["T.P...","....S.",".TRR.P",".TP...",".TT.TR","..GT.."],"animals":[{"x":4,"y":1,"dir":"down"}],"allowed":["right","down","left","up"]},{"world":3,"grid":["P.TTPT",".S.S..","....T.","..S..T","T.R...","G....."],"animals":[{"x":3,"y":1,"dir":"right"},{"x":1,"y":1,"dir":"left"},{"x":2,"y":3,"dir":"left"}],"allowed":["right","down","left"]}];
+const LEVELS = [{"world":0,"grid":["..G","S..","..."],"animals":[{"x":0,"y":1,"dir":"right"}],"allowed":["up"],"tappable":["2,1"],"intro":{"x":2,"y":1,"dir":"up"},"say":"Tap the square to show the way. Then press go!"},{"world":0,"grid":["..S","G..",".PR"],"animals":[{"x":2,"y":0,"dir":"down"}],"allowed":["left"]},{"world":0,"grid":["R.G","...","S.T"],"animals":[{"x":0,"y":2,"dir":"right"}],"allowed":["right","up"]},{"world":0,"grid":["G..","P.T","R.S"],"animals":[{"x":2,"y":2,"dir":"left"}],"allowed":["left","up"]},{"world":0,"grid":["SS.","RP.","G.."],"animals":[{"x":1,"y":0,"dir":"right"},{"x":0,"y":0,"dir":"right"}],"allowed":["down","left"]},{"world":1,"grid":["S..P",".R..","....","G..R"],"animals":[{"x":0,"y":0,"dir":"right"}],"allowed":["down","left"]},{"world":1,"grid":["R..S","..RR","....","R.G."],"animals":[{"x":3,"y":0,"dir":"left"}],"allowed":["right","down"]},{"world":1,"grid":["P..S","..R.","..RG","R..."],"animals":[{"x":3,"y":0,"dir":"left"}],"allowed":["right","down","up"]},{"world":1,"grid":["....","SR..",".R.R","TRG."],"animals":[{"x":0,"y":1,"dir":"down"}],"allowed":["right","down","up"]},{"world":1,"grid":["S...","RRR.","G...","PS.."],"animals":[{"x":0,"y":0,"dir":"right"},{"x":1,"y":3,"dir":"right"}],"allowed":["down","left","up"]},{"world":1,"grid":["G..R","P...",".R.S","..RR"],"animals":[{"x":3,"y":2,"dir":"left"}],"allowed":["left","up"]},{"world":1,"grid":["...T","GR..",".T.R","S..P"],"animals":[{"x":0,"y":3,"dir":"right"}],"allowed":["down","left","up"]},{"world":1,"grid":["RSP.","T...",".PR.",".RG."],"animals":[{"x":1,"y":0,"dir":"down"}],"allowed":["right","down","left"]},{"world":1,"grid":["...G",".PR.","..TP","R..S"],"animals":[{"x":3,"y":3,"dir":"left"}],"allowed":["right","left","up"]},{"world":1,"grid":["..RS","..S.","..RT","...G"],"animals":[{"x":3,"y":0,"dir":"down"},{"x":2,"y":1,"dir":"right"}],"allowed":["right","down","left"]},{"world":2,"grid":[".....","....P","GTP..",".R...","S...T"],"animals":[{"x":0,"y":4,"dir":"right"}],"allowed":["down","left","up"]},{"world":2,"grid":[".TRT.","T....","S.R..",".T...","...TG"],"animals":[{"x":0,"y":2,"dir":"right"}],"allowed":["right","down","up"]},{"world":2,"grid":["S....",".P...",".T.T.",".T.RG","...R."],"animals":[{"x":0,"y":0,"dir":"down"}],"allowed":["right","down","up"]},{"world":2,"grid":["GTT..",".....",".RT.R","TPT..","P.S.."],"animals":[{"x":2,"y":4,"dir":"left"}],"allowed":["right","left","up"]},{"world":2,"grid":["....S","..P..",".PT..","GT..S","R.R.."],"animals":[{"x":4,"y":3,"dir":"down"},{"x":4,"y":0,"dir":"down"}],"allowed":["down","left","up"]},{"world":2,"grid":["....P",".T...",".P.S.",".R..T","G.T.T"],"animals":[{"x":3,"y":2,"dir":"down"}],"allowed":["down","left","up"]},{"world":2,"grid":["....T",".T..R","GP..S","..T..","...TP"],"animals":[{"x":4,"y":2,"dir":"down"}],"allowed":["down","left","up"]},{"world":2,"grid":["S.T.P","P....",".TTP.","G....",".TT.P"],"animals":[{"x":0,"y":0,"dir":"right"}],"allowed":["right","down","left"]},{"world":2,"grid":["TS.R.","...T.","P.T..","R...T",".RTG."],"animals":[{"x":1,"y":0,"dir":"right"}],"allowed":["right","down","left"]},{"world":2,"grid":["TT..G",".....","TS.PT","..P.T","T.SS."],"animals":[{"x":2,"y":4,"dir":"right"},{"x":3,"y":4,"dir":"left"},{"x":1,"y":2,"dir":"down"}],"allowed":["right","left","up"]},{"world":3,"grid":["......",".....T",".R.R.P","..RT..",".T...T",".S.P.G"],"animals":[{"x":1,"y":5,"dir":"left"}],"allowed":["right","down","up"]},{"world":3,"grid":["T.TG..","...TT.","......","..T.TR","....S.","..TTT."],"animals":[{"x":4,"y":4,"dir":"left"}],"allowed":["right","left","up"]},{"world":3,"grid":[".....G",".T.RT.",".RTP.T","......","P.PT..","TT.S.T"],"animals":[{"x":3,"y":5,"dir":"left"}],"allowed":["right","left","up"]},{"world":3,"grid":["......","T..T.P","T..TS.","..RT..",".T.R.R","GTT..."],"animals":[{"x":4,"y":2,"dir":"down"}],"allowed":["down","left","up"]},{"world":3,"grid":["......",".R..GT","T..T.T","T.T.RS","..R...","P..S.."],"animals":[{"x":3,"y":5,"dir":"right"},{"x":5,"y":3,"dir":"down"}],"allowed":["right","left","up"]},{"world":3,"grid":[".G....",".T..P.","T.....","..TP..","P.S.T.","..TT.."],"animals":[{"x":2,"y":4,"dir":"right"}],"allowed":["right","left","up"]},{"world":3,"grid":[".RS..T","...R.T","......","....R.","T....P","..RTGT"],"animals":[{"x":2,"y":0,"dir":"right"}],"allowed":["right","down","left"]},{"world":3,"grid":["..RT..","....S.",".R.TR.",".TTTR.","TT....","G...T."],"animals":[{"x":4,"y":1,"dir":"left"}],"allowed":["right","down","left"]},{"world":3,"grid":["GTP...","....RS",".TT.T.","....T.","TRRP..","T....T"],"animals":[{"x":5,"y":1,"dir":"down"}],"allowed":["down","left","up"]},{"world":3,"grid":["..T.G.","TRP..R","..S...","...P.T","..T.P.","..S.S."],"animals":[{"x":2,"y":5,"dir":"right"},{"x":4,"y":5,"dir":"left"},{"x":2,"y":2,"dir":"left"}],"allowed":["right","left","up"]},{"world":3,"grid":["T....R","T...R.","..R..S","P..PT.","R.RTRG","......"],"animals":[{"x":5,"y":2,"dir":"left"}],"allowed":["right","down","left","up"]},{"world":3,"grid":[".G.TTR","T.....","....R.","RTTT..","T..S.T",".T.PR."],"animals":[{"x":3,"y":4,"dir":"left"}],"allowed":["right","left","up"]},{"world":3,"grid":["G.T..R","T.T...","T.T.RS","T...R.","T...T.",".....T"],"animals":[{"x":5,"y":2,"dir":"down"}],"allowed":["down","left","up"]},{"world":3,"grid":["T.P...","....S.",".TRR.P",".TP...",".TT.TR","..GT.."],"animals":[{"x":4,"y":1,"dir":"down"}],"allowed":["right","down","left","up"]},{"world":3,"grid":["P.TTPT",".S.S..","....T.","..S..T","T.R...","G....."],"animals":[{"x":3,"y":1,"dir":"right"},{"x":1,"y":1,"dir":"left"},{"x":2,"y":3,"dir":"left"}],"allowed":["right","down","left"]},{"world":4,"grid":["..gS.",".SP.R","..P..","..R..","T.g.."],"animals":[{"x":3,"y":0,"dir":"down","goal":{"x":2,"y":4}},{"x":1,"y":1,"dir":"down","goal":{"x":2,"y":0}}],"allowed":["right","left","up"],"stage":"apart"},{"world":4,"grid":["..gTg","SR.R.",".R...","R..R.",".S..."],"animals":[{"x":1,"y":4,"dir":"left","goal":{"x":4,"y":0}},{"x":0,"y":1,"dir":"down","goal":{"x":2,"y":0}}],"allowed":["right","up"],"stage":"apart"},{"world":4,"grid":["...R..",".....g","S...TR",".P....",".g.S..",".P.R.."],"animals":[{"x":3,"y":4,"dir":"right","goal":{"x":1,"y":4}},{"x":0,"y":2,"dir":"down","goal":{"x":5,"y":1}}],"allowed":["right","left","up"],"stage":"apart"},{"world":4,"grid":[".T.SS",".....",".TPRP","..g.g",".R..."],"animals":[{"x":3,"y":0,"dir":"left","goal":{"x":2,"y":3}},{"x":4,"y":0,"dir":"left","goal":{"x":4,"y":3}}],"allowed":["right","down","left"],"stage":"share"},{"world":4,"grid":["..R...","......",".R...T","gTS...","gTRP.P","T..S.."],"animals":[{"x":3,"y":5,"dir":"right","goal":{"x":0,"y":3}},{"x":2,"y":3,"dir":"right","goal":{"x":0,"y":4}}],"allowed":["down","left","up"],"stage":"share"},{"world":4,"grid":["gP.T..",".g...T","...P.T","T.....","TT...P","..SS.."],"animals":[{"x":2,"y":5,"dir":"left","goal":{"x":0,"y":0}},{"x":3,"y":5,"dir":"left","goal":{"x":1,"y":1}}],"allowed":["right","left","up"],"stage":"share"},{"world":4,"grid":["g.S..",".P...","SP..T","...g.","R.P.."],"animals":[{"x":2,"y":0,"dir":"down","goal":{"x":0,"y":0}},{"x":0,"y":2,"dir":"down","goal":{"x":3,"y":3}}],"allowed":["right","left","up"],"stage":"tangle"},{"world":4,"grid":["P...R.","S.....",".R...R","...T.R","R...S.",".g.TgT"],"animals":[{"x":4,"y":4,"dir":"left","goal":{"x":1,"y":5}},{"x":0,"y":1,"dir":"down","goal":{"x":4,"y":5}}],"allowed":["right","down","up"],"stage":"tangle"},{"world":4,"grid":["....g.","gPRP..","..R.ST","......","....S.",".R..PT"],"animals":[{"x":4,"y":4,"dir":"right","goal":{"x":4,"y":0}},{"x":4,"y":2,"dir":"down","goal":{"x":0,"y":1}}],"allowed":["right","left","up"],"stage":"tangle"},{"world":4,"grid":["...R..","gRg...","gT.S..","...SPT",".R....",".P...S"],"animals":[{"x":3,"y":2,"dir":"down","goal":{"x":2,"y":1}},{"x":3,"y":3,"dir":"down","goal":{"x":0,"y":2}},{"x":5,"y":5,"dir":"left","goal":{"x":0,"y":1}}],"allowed":["down","left","up"],"stage":"share"}];
 // ---------- art (inline SVG, no image files) ----------
 const STAR4='<svg viewBox="0 0 24 24"><path d="M12 0 L14.6 9.4 L24 12 L14.6 14.6 L12 24 L9.4 14.6 L0 12 L9.4 9.4Z" fill="#FFF7B0" stroke="#F2B705" stroke-width="1.4" stroke-linejoin="round"/></svg>';
 const SPARKS=[[10,8,.26,0],[68,4,.2,.5],[6,64,.2,1],[72,66,.26,.25]].map(([l,t,z,d])=>`<i style="left:${l}%;top:${t}%;width:${z*100}%;height:${z*100}%;animation-delay:${d}s">${STAR4}</i>`).join('');
@@ -598,7 +712,8 @@ const WORLDS = [
   { id: 'meadow', size: 3 },
   { id: 'beach', size: 4 },
   { id: 'jungle', size: 5 },
-  { id: 'grove', size: 6 }
+  { id: 'grove', size: 6 },
+  { id: 'lagoon', size: 6, bonus: true }   // bonus: each character has its own goal
 ];
 const WORLD_LEVELS = WORLDS.map((w, wi) => LEVELS.map((l, i) => (l.world === wi ? i : -1)).filter(i => i >= 0));
 
@@ -620,7 +735,8 @@ function pickTypes(n, avoid) {   // n different characters, preferring ones not 
   const rest = shuffled(ALL_ANIMALS.filter(t => avoid.includes(t)));
   return fresh.concat(rest).slice(0, n);
 }
-function sayFor(types) {
+function sayFor(types, own) {
+  if (own) return types.length === 2 ? 'Each friend has their own snack. One plan for both of them!' : 'Each friend has their own snack. One plan for everybody!';
   if (types.length === 1) return `Help the ${CHARS[types[0]].name} find ${CHARS[types[0]].snack}!`;
   return types.length === 2 ? 'One plan for both of them! Help them find their snacks.' : 'One plan for everybody! Help them find their snacks.';
 }
@@ -631,7 +747,7 @@ const LOCK = `<svg class="lock" viewBox="0 0 24 24"><path d="M8 10.5V7.5a4 4 0 0
 
 const state = {
   i: 0, level: null, arrows: [], animals: [], types: [], fails: 0, running: false, won: false, sol: null, nudge: null,
-  sound: true, voice: false, hintAfter: 2
+  sound: true, voice: false, hintAfter: 2, arrowMode: 'all'
 };
 
 // ---------- progress (kept in this browser only) ----------
@@ -658,13 +774,14 @@ function loadSave() {
     if (typeof d.sound === 'boolean') state.sound = d.sound;
     if (typeof d.voice === 'boolean') state.voice = d.voice;
     if ([0, 2, 3].includes(d.hintAfter)) state.hintAfter = d.hintAfter;
+    if (d.arrowMode === 'all' || d.arrowMode === 'needed') state.arrowMode = d.arrowMode;
   } catch (e) {}
 }
 function persist() {
   try {
     localStorage.setItem(STORE, JSON.stringify({
       done: [...progress.done], unlockAll: progress.unlockAll,
-      sound: state.sound, voice: state.voice, hintAfter: state.hintAfter
+      sound: state.sound, voice: state.voice, hintAfter: state.hintAfter, arrowMode: state.arrowMode
     }));
   } catch (e) {}
 }
@@ -682,15 +799,21 @@ function renderBoard() {
   for (let y = 0; y < L.rows; y++) for (let x = 0; x < L.cols; x++) {
     const c = cellAt(L, x, y), tap = isTappable(L, x, y), isStart = L.animals.some(a => a.x === x && a.y === y);
     const el = document.createElement(tap ? 'button' : 'div');
-    el.className = 'tile' + (c === 'G' ? ' goal' : '') + (isStart ? ' start' : '');
+    const owner = c === 'g' ? L.animals.findIndex(a => a.goal && a.goal.x === x && a.goal.y === y) : -1;
+    el.className = 'tile' + (c === 'G' || c === 'g' ? ' goal' : '') + (isStart ? ' start' : '');
+    if (owner >= 0) el.dataset.owner = owner;
     el.dataset.k = K(x, y);
     let inner = `<div class="face ${(x + y) % 2 ? 'b' : 'a'}"></div>`;
-    if (c === 'G') inner += `<div class="halo"></div><div class="obj">${goalSvg(state.types.map(t => CHARS[t].food))}</div><div class="sparks">${SPARKS}</div>`;
+    if (isStart) inner += '<div class="spot"></div>';   // marks where a character starts, until the first Go
+    if (c === 'G' || c === 'g') {
+      const foods = owner >= 0 ? [CHARS[state.types[owner]].food] : state.types.map(t => CHARS[t].food);
+      inner += `<div class="halo"></div><div class="obj">${goalSvg(foods)}</div><div class="sparks">${SPARKS}</div>`;
+    }
     else if (OBJSVG[c]) inner += `<div class="obj">${OBJSVG[c]}</div>`;
     if (tap) {
       inner += '<div class="arrow"></div><div class="hintl"></div>';
       el.setAttribute('aria-label', 'Empty square');
-      el.addEventListener('click', () => onTap(x, y));
+      attachSwipe(el, x, y);
     }
     el.innerHTML = inner;
     grid.appendChild(el);
@@ -703,7 +826,8 @@ function renderBoard() {
     const el = document.createElement('div');
     el.className = 'animal';
     const type = state.types[ai];
-    el.innerHTML = `<div class="hopper"><div class="flip">${sprite(type)}</div></div>`;
+    el.style.setProperty('--idle-delay', (-Math.random() * 2.6).toFixed(2) + 's');
+    el.innerHTML = `<div class="hopper"><div class="idle"><div class="flip">${sprite(type)}</div></div></div>`;
     el.setAttribute('role', 'button');
     el.setAttribute('aria-label', `${CHARS[type].name}. Tap to change`);
     layer.appendChild(el);
@@ -715,9 +839,11 @@ function renderBoard() {
   });
   spread();
 }
-function renderGoal() {
-  const g = $('grid').querySelector('.goal .obj');
-  if (g) g.innerHTML = goalSvg(state.animals.map(o => CHARS[o.type].food));
+function renderGoal() {   // a shared goal shows everyone's food; an own goal shows its owner's food
+  $('grid').querySelectorAll('.goal').forEach(t => {
+    const foods = t.dataset.owner !== undefined ? [CHARS[state.animals[Number(t.dataset.owner)].type].food] : state.animals.map(o => CHARS[o.type].food);
+    t.querySelector('.obj').innerHTML = goalSvg(foods);
+  });
 }
 // Tap a character to swap it for the next one not already on the board. The goal food follows.
 function swapAnimal(o) {
@@ -740,7 +866,8 @@ function swapAnimal(o) {
   o.hop.animate([{ transform: 'scale(.55) rotate(-12deg)' }, { transform: 'scale(1.15) rotate(6deg)' }, { transform: 'scale(1) rotate(0)' }], { duration: 340, easing: 'ease-out' });
   puff(o.x, o.y);
   renderGoal();
-  const goal = $('grid').querySelector('.goal .obj');
+  const idx = state.animals.indexOf(o);
+  const goal = $('grid').querySelector(`.goal[data-owner="${idx}"] .obj`) || $('grid').querySelector('.goal:not([data-owner]) .obj');
   if (goal) goal.animate([{ transform: 'scale(.6)' }, { transform: 'scale(1.12)' }, { transform: 'scale(1)' }], { duration: 360, easing: 'ease-out' });
   sfx.swap();
   setTimeout(() => cry(next, 'hi'), 140);
@@ -806,9 +933,9 @@ function load(i, speak) {
   state.fails = 0; state.running = false; state.won = false; state.sol = null;
   clearTimeout(state.nudge);
   renderBoard(); sizeBoard(); renderDots(); setCTA('go');
-  $('grid').classList.remove('busy', 'won');
+  $('grid').classList.remove('busy', 'won', 'played');
   if (L.intro) showHint(L.intro, false);
-  if (speak) say(L.say || sayFor(state.types));
+  if (speak) say(L.say || sayFor(state.types, L.animals.some(a => a.goal)));
 }
 
 // ---------- hints ----------
@@ -825,9 +952,13 @@ function showHint(h, withSound) {
   el.querySelector('.hintl').innerHTML = `<div class="ring"></div>${ghost}<div class="hand">${HAND}</div>`;
   if (withSound) sfx.hint();
 }
-function currentHint() {   // first square along the planned route where the child's board differs
+// The hint starts from the child's own board: the smallest change that makes it work,
+// keeping their arrows wherever possible. The solver's plan is only a fallback.
+function currentHint() {
   const L = state.level;
-  if (!state.sol) state.sol = solve(L) || {};
+  const fix = fixFor(L, getArrow, arrowKinds());
+  if (fix) return fix;
+  if (!state.sol) state.sol = solve({ ...L, allowed: arrowKinds() }) || {};
   return hintFor(L, getArrow, state.sol);
 }
 
@@ -840,15 +971,41 @@ function scheduleNudge() {
     if (!state.running && !state.won && state.arrows.some(r => r.some(Boolean))) $('cta').classList.add('nudge');
   }, 7000);
 }
-function onTap(x, y) {
-  if (state.running || state.won) return;
+// Arrow kinds a tap cycles through: all four by default, or only the ones the level needs (grown-ups setting).
+const ALL_DIRS = ['right', 'down', 'left', 'up'];
+function arrowKinds() { return state.arrowMode === 'needed' ? state.level.allowed : ALL_DIRS; }
+function placeArrow(x, y, dir) {
   audio();
-  const opts = [null, ...state.level.allowed];
-  const next = opts[(opts.indexOf(getArrow(x, y)) + 1) % opts.length];
-  setArrow(x, y, next);
-  sfx.tap(next);
+  setArrow(x, y, dir);
+  sfx.tap(dir);
   clearHint();
   scheduleNudge();
+}
+function onTap(x, y) {
+  if (state.running || state.won) return;
+  const opts = [null, ...arrowKinds()];
+  placeArrow(x, y, opts[(opts.indexOf(getArrow(x, y)) + 1) % opts.length]);
+}
+// Swipe across a square to point its arrow that way, without cycling.
+let swipe = null, swipedAt = 0;
+function attachSwipe(el, x, y) {
+  el.addEventListener('pointerdown', e => {
+    if (state.running || state.won) return;
+    swipe = { el, x: e.clientX, y: e.clientY };
+    try { el.setPointerCapture(e.pointerId); } catch (err) {}
+  });
+  el.addEventListener('pointerup', e => {
+    if (!swipe || swipe.el !== el) return;
+    const dx = e.clientX - swipe.x, dy = e.clientY - swipe.y;
+    swipe = null;
+    if (Math.hypot(dx, dy) < Math.max(18, el.clientWidth * 0.22)) return;   // a tap, handled by click
+    swipedAt = performance.now();
+    if (state.running || state.won) return;
+    const dir = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up');
+    if (arrowKinds().includes(dir)) placeArrow(x, y, dir);
+  });
+  el.addEventListener('pointercancel', () => { swipe = null; });
+  el.addEventListener('click', () => { if (performance.now() - swipedAt < 450) return; onTap(x, y); });
 }
 function puff(x, y) {
   const p = document.createElement('div');
@@ -881,7 +1038,7 @@ async function run() {
   clearHint();
   clearTimeout(state.nudge);
   $('cta').classList.remove('nudge');
-  $('grid').classList.add('busy');
+  $('grid').classList.add('busy', 'played');
   $('cta').disabled = true;
   const L = state.level;
   const sims = L.animals.map(a => walk(L, a, (x, y) => getArrow(x, y)));
@@ -975,8 +1132,7 @@ async function win() {
   $('grid').classList.add('won');
   progress.done.add(state.i);
   persist();
-  const g = $('grid').querySelector('.goal .obj');
-  if (g) g.classList.add('eaten');
+  $('grid').querySelectorAll('.goal .obj').forEach(g => g.classList.add('eaten'));
   state.animals.forEach(o => { o.flip.dataset.view = 'front'; joy(o); });   // turn to face the player and jump for joy
   sfx.win(); confetti();
   say(pick(['Yay! You did it!', 'Great planning!', 'Hooray!']));
@@ -1024,7 +1180,10 @@ function renderMap() {
       const label = `Level ${i + 1}` + (L.animals.length > 1 ? `, ${L.animals.length} friends` : '') + (done ? ', finished' : open ? '' : ', locked');
       return `<button class="${cls}" data-i="${i}" aria-label="${label}"><span class="thumb" style="--n:${L.grid.length}">${cells}</span>${done ? `<svg class="badge" viewBox="0 0 24 24">${STAR}</svg>` : ''}${open ? '' : LOCK}</button>`;
     }).join('');
-    return `<section class="world w-${w.id}"><div class="wtag" aria-label="${w.size} by ${w.size} squares"><span class="mini" style="--n:${w.size}">${'<i></i>'.repeat(w.size * w.size)}</span></div><div class="lvls">${btns}</div></section>`;
+    const tag = w.bonus
+      ? `<div class="wtag bonus" aria-label="Bonus: each friend has their own snack"><span class="duo">${GOALSVG.fish}${GOALSVG.peanuts}</span></div>`
+      : `<div class="wtag" aria-label="${w.size} by ${w.size} squares"><span class="mini" style="--n:${w.size}">${'<i></i>'.repeat(w.size * w.size)}</span></div>`;
+    return `<section class="world w-${w.id}">${tag}<div class="lvls">${btns}</div></section>`;
   }).join('');
   $('worlds').querySelectorAll('.lvl').forEach(b => b.addEventListener('click', () => {
     audio();
@@ -1059,6 +1218,7 @@ function renderSheet() {
   $('setRows').innerHTML = [
     `<div class="setrow"><span class="lab">Sound</span>${seg('sound', [[1, 'On'], [0, 'Off']], +state.sound)}</div>`,
     `<div class="setrow"><span class="lab">Voice prompts</span>${seg('voice', [[1, 'On'], [0, 'Off']], +state.voice)}</div>`,
+    `<div class="setrow"><span class="lab">Arrows to choose from</span>${seg('arrows', [[1, 'All four'], [0, 'Only the ones needed']], +(state.arrowMode === 'all'))}</div>`,
     `<div class="setrow"><span class="lab">Hint appears after</span>${seg('hint', [[2, '2 tries'], [3, '3 tries'], [0, 'Never']], state.hintAfter)}</div>`,
     `<div class="setrow"><span class="lab">Levels</span>${seg('unlock', [[0, 'Unlock in order'], [1, 'All open']], +progress.unlockAll)}</div>`
   ].join('');
@@ -1067,6 +1227,7 @@ function renderSheet() {
     if (k === 'sound') state.sound = !!v;
     if (k === 'voice') { state.voice = !!v; if (!v && 'speechSynthesis' in window) { try { speechSynthesis.cancel(); } catch (e) {} } }
     if (k === 'hint') state.hintAfter = v;
+    if (k === 'arrows') { state.arrowMode = v ? 'all' : 'needed'; state.sol = null; }
     if (k === 'unlock') { progress.unlockAll = !!v; if (!$('map').hidden) renderMap(); }
     persist();
     renderSheet();

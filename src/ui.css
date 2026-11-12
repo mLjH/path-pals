@@ -1,0 +1,109 @@
+/* ---------- worlds: each grid size gets its own ground ---------- */
+[hidden]{display:none!important}
+.w-meadow,:root[data-world="meadow"]{--bg:#D8F0F6;--grass-a:#CDE9A6;--grass-b:#C0E096;--edge:#A5CA78;--edge-dark:#88B05C}
+.w-beach,:root[data-world="beach"]{--bg:#CDEEFA;--grass-a:#F6E7BE;--grass-b:#EEDBA6;--edge:#DDBF7E;--edge-dark:#C3A05C}
+.w-jungle,:root[data-world="jungle"]{--bg:#DCF1E2;--grass-a:#BFE29A;--grass-b:#AED688;--edge:#7FB35A;--edge-dark:#5F9140}
+.w-grove,:root[data-world="grove"]{--bg:#E4F2E0;--grass-a:#DDF0D4;--grass-b:#CFE7C4;--edge:#9DC79A;--edge-dark:#7BA678}
+body{transition:background-color .4s}
+
+/* ---------- header ---------- */
+.lead{display:flex;align-items:center;gap:12px;min-width:0;flex:1 1 auto}
+.dots{min-width:0;flex:1 1 auto;gap:4px}
+.dots .star{flex:0 1 26px;min-width:8px;width:auto;height:auto;aspect-ratio:1}
+
+/* ---------- characters can be tapped to swap ---------- */
+.animal{pointer-events:auto;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.grid.busy .animal,.grid.won .animal{pointer-events:none;cursor:default}
+.grid.snap .animal{transition:none!important}
+.party{flex-wrap:wrap}
+.party svg{width:clamp(38px,10.5vw,100px)}
+.round{width:44px;height:44px;flex:none;border-radius:50%;border:0;background:rgba(255,255,255,.7);display:grid;place-items:center;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.round svg{width:22px;height:22px}
+.round:active{transform:scale(.92)}
+
+/* ---------- level map ---------- */
+.screen.map{display:block;place-items:normal;align-content:normal;overflow-y:auto;-webkit-overflow-scrolling:touch;text-align:left;
+  padding-top:calc(env(safe-area-inset-top,0px) + 8px);padding-bottom:calc(env(safe-area-inset-bottom,0px) + 28px)}
+.mapwrap{max-width:760px;margin:0 auto;display:grid;gap:16px}
+.mapbar{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:56px}
+.maptitle{margin:0;font-family:var(--font-display);font-weight:700;font-size:30px;letter-spacing:.01em}
+.worlds{display:grid;gap:18px}
+.world{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:12px;padding:12px;border-radius:24px;background:var(--edge);box-shadow:0 6px 0 var(--edge-dark)}
+.wtag{display:grid;place-items:center;width:52px;height:52px;border-radius:16px;background:var(--grass-a)}
+.mini{display:grid;grid-template-columns:repeat(var(--n),1fr);gap:2px;width:34px;height:34px}
+.mini i{display:block;border-radius:2px;background:var(--edge-dark)}
+.lvls{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.lvl{position:relative;aspect-ratio:1;max-width:100%;border:0;padding:0;border-radius:22%;background:var(--grass-a);box-shadow:inset 0 -5px 0 var(--grass-b);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .08s}
+.lvl:active{transform:scale(.93)}
+/* each level button shows a tiny picture of its board, since characters change every time */
+.thumb{position:absolute;inset:14%;display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));grid-template-rows:repeat(var(--n),minmax(0,1fr));gap:2px}
+.thumb i{display:block;border-radius:24%;background:var(--grass-b)}
+.thumb i.R{background:#8C98AE}
+.thumb i.T{background:#2E8B57}
+.thumb i.P{background:#A06A35}
+.thumb i.G{background:#FFC93C;box-shadow:0 0 0 2px #FFF1A8}
+.thumb i.S{background:#fff;border-radius:50%;box-shadow:0 0 0 1.5px var(--ink-soft)}
+.lvl.done{background:#FFF4C2;box-shadow:inset 0 -5px 0 #F5DE85}
+.badge{position:absolute;right:-7%;top:-7%;width:40%;height:40%;filter:drop-shadow(0 2px 0 rgba(31,58,68,.2))}
+.badge path{fill:var(--sun);stroke:var(--ink);stroke-width:1.6;stroke-linejoin:round}
+.lvl.now::after{content:"";position:absolute;inset:-6px;border-radius:26%;border:5px solid var(--sun);animation:ring 1.2s ease-out infinite;pointer-events:none}
+.lvl.locked{cursor:default}
+.lvl.locked .thumb{opacity:.3;filter:grayscale(1)}
+.lock{position:absolute;left:50%;top:50%;width:34%;height:34%;transform:translate(-50%,-50%)}
+.lvl.nope{animation:shake .35s}
+
+/* ---------- world and finale celebration ---------- */
+.cheerstars{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.cheerstars .star{width:46px;height:46px;animation:pop .4s cubic-bezier(.3,1.6,.5,1) both}
+.cheerstars .star:nth-child(2){animation-delay:.12s}
+.cheerstars .star:nth-child(3){animation-delay:.24s}
+.cheerstars .star:nth-child(4){animation-delay:.36s}
+.cheerstars .star:nth-child(5){animation-delay:.48s}
+.cheerstars.many{max-width:420px;margin:0 auto}
+.cheerstars.many .star{width:34px;height:34px}
+
+/* ---------- grown-ups panel ---------- */
+.card{width:min(100%,440px);max-height:calc(100% - 8px);overflow-y:auto}
+.setrows{display:grid;gap:14px}
+.setrow{display:grid;gap:6px}
+.lab{font-weight:800;font-size:14px}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.chip:disabled{opacity:.4;cursor:default}
+.chip.warn{border-color:#B83A2E;color:#B83A2E}
+.chip.armed{background:#B83A2E;border-color:#B83A2E;color:#fff}
+
+@media (prefers-reduced-motion:reduce){
+  .lvl.now::after,.cheerstars .star{animation:none}
+}
+
+/* swiping across a square sets its arrow, so the board must not scroll or zoom under a finger */
+.tile{touch-action:none}
+
+/* ---------- bonus world: each character has its own goal ---------- */
+.w-lagoon,:root[data-world="lagoon"]{--bg:#DDF3F7;--grass-a:#C9EEE6;--grass-b:#B8E4DA;--edge:#79C3B6;--edge-dark:#55A196}
+.thumb i.g{background:#FFC93C;box-shadow:0 0 0 2px #FFF1A8}
+.duo{position:relative;display:block;width:40px;height:40px}
+.duo svg{position:absolute;width:28px;height:28px}
+.duo svg:first-child{left:0;top:0}
+.duo svg:last-child{right:0;bottom:0}
+
+/* ---------- characters stand out: a glowing ring on each start square (gone after the first Go) and a gentle idle bounce ---------- */
+.spot{position:absolute;inset:6%;border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle,rgba(255,255,255,.95) 0%,rgba(255,255,255,.75) 55%,rgba(255,255,255,0) 72%);
+  box-shadow:0 0 0 4px #FF5FA2,0 0 16px 4px rgba(255,95,162,.55);
+  animation:spot 1.6s ease-in-out infinite}
+.tile.start .face::after{display:none}
+.idle{position:absolute;inset:0;transform-origin:50% 92%;animation:idle 2.6s ease-in-out infinite;animation-delay:var(--idle-delay,0s)}
+.grid.busy .idle,.grid.won .idle{animation:none}
+.spot{transition:opacity .35s}
+.grid.played .spot{opacity:0;animation:none}
+@keyframes spot{0%,100%{transform:scale(.94);box-shadow:0 0 0 4px #FF5FA2,0 0 10px 2px rgba(255,95,162,.4)}50%{transform:scale(1.02);box-shadow:0 0 0 5px #FF5FA2,0 0 22px 7px rgba(255,95,162,.65)}}
+@keyframes idle{
+  0%,58%,100%{transform:translateY(0) scale(1,1)}
+  29%{transform:translateY(0) scale(1.03,.97)}
+  66%{transform:translateY(1%) scale(1.07,.92)}
+  76%{transform:translateY(-14%) scale(.95,1.06)}
+  86%{transform:translateY(1%) scale(1.05,.95)}
+  93%{transform:translateY(0) scale(1,1)}
+}
+@media (prefers-reduced-motion:reduce){ .spot,.idle{animation:none} }
